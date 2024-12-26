@@ -73,7 +73,7 @@
         <button onclick="searchVideos()">بحث</button>
     </div>
 
-    <!-- قائمة الفيديوهات -->
+    <!-- عرض الفيديو -->
     <div class="video-container">
         <iframe id="videoPlayer" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
@@ -95,13 +95,14 @@
     </div>
 
     <script>
-        // JavaScript - للتحكم في الفيديوهات
+        // JavaScript للتحكم في الفيديو
         const videoPlayer = document.getElementById("videoPlayer");
 
         function playVideo(url) {
             videoPlayer.src = url;
         }
 
+        // وظيفة البحث في المقاطع
         function searchVideos() {
             const searchQuery = document.getElementById("searchQuery").value.toLowerCase();
             const videoItems = document.querySelectorAll(".video-item");
