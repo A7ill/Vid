@@ -1,0 +1,62 @@
+// البحث عن الفيديوهات
+function searchVideos() {
+    var searchQuery = document.getElementById("search-bar").value.toLowerCase();
+    var videos = document.querySelectorAll(".video-item");
+    videos.forEach(function(video) {
+        var title = video.querySelector(".video-title").textContent.toLowerCase();
+        if (title.indexOf(searchQuery) > -1) {
+            video.style.display = "block";
+        } else {
+            video.style.display = "none";
+        }
+    });
+}
+
+// حركة السحب بين الفيديوهات
+let currentIndex = 0;
+const videoItems = document.querySelectorAll(".video-item");
+
+document.getElementById('video-gallery').addEventListener('touchstart', handleTouchStart, false);
+document.getElementById('video-gallery').addEventListener('touchend', handleTouchEnd, false);
+
+let touchStartY = 0;
+let touchEndY = 0;
+
+function handleTouchStart(e) {
+    touchStartY = e.changedTouches[0].screenY;
+}
+
+function handleTouchEnd(e) {
+    touchEndY = e.changedTouches[0].screenY;
+
+    if (touchEndY < touchStartY) {
+        // سحب لأعلى
+        nextVideo();
+    }
+    if (touchEndY > touchStartY) {
+        // سحب لأسفل
+        previousVideo();
+    }
+}
+
+function nextVideo() {
+    currentIndex = (currentIndex + 1) % videoItems.length;
+    updateVideoDisplay();
+}
+
+function previousVideo() {
+    currentIndex = (currentIndex - 1 + videoItems.length) % videoItems.length;
+    updateVideoDisplay();
+}
+
+function updateVideoDisplay() {
+    videoItems.forEach(function(video, index) {
+        if (index === currentIndex) {
+            video.style.transform = 'translateY(0)';
+        } else {
+            video.style.transform = 'translateY(100%)';
+        }
+    });
+}
+
+updateVideoDisplay();  // عرض الفيديو الأول عند البداية
