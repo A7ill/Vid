@@ -1,237 +1,120 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة الثعبان</title>
-  <style>
-    /* CSS */
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
-    }
-
-    #menu, #game-over {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 18px;
-      border: none;
-      border-radius: 5px;
-      background-color: #4caf50;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    #game-container canvas {
-      border: 4px solid white;
-      border-radius: 10px;
-      margin: 20px auto;
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع الفيديوهات</title>
+    <style>
+        /* CSS - لتنسيق الصفحة */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            color: white;
+        }
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .video-container iframe {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border-radius: 10px;
+        }
+        .search-box {
+            margin: 20px;
+            text-align: center;
+        }
+        .search-box input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 5px;
+            border: none;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .search-box button:hover {
+            background-color: #1ed760;
+        }
+        .video-list {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px;
+        }
+        .video-item {
+            margin: 0 10px;
+            width: 150px;
+            text-align: center;
+        }
+        .video-item img {
+            width: 100%;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-  <!-- HTML -->
-  <div id="menu">
-    <h1>لعبة الثعبان</h1>
-    <button id="start-game">ابدأ اللعبة</button>
-    <button id="select-map">اختيار الخريطة</button>
-  </div>
+    <!-- واجهة البحث -->
+    <div class="search-box">
+        <input type="text" id="searchQuery" placeholder="ابحث عن الفيديوهات...">
+        <button onclick="searchVideos()">بحث</button>
+    </div>
 
-  <div id="game-container" style="display: none;">
-    <canvas></canvas>
-  </div>
+    <!-- قائمة الفيديوهات -->
+    <div class="video-container">
+        <iframe id="videoPlayer" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
 
-  <div id="game-over" style="display: none;">
-    <h2>انتهت اللعبة!</h2>
-    <p>النقاط: <span id="score"></span></p>
-    <button id="restart-game">إعادة المحاولة</button>
-  </div>
+    <!-- قائمة المقاطع -->
+    <div class="video-list">
+        <div class="video-item" onclick="playVideo('https://www.youtube.com/embed/VGyWbu5_GPs')">
+            <img src="https://img.youtube.com/vi/VGyWbu5_GPs/0.jpg" alt="مقطع 1">
+            <p>مقطع 1</p>
+        </div>
+        <div class="video-item" onclick="playVideo('https://www.youtube.com/embed/tgbNymZ7vqY')">
+            <img src="https://img.youtube.com/vi/tgbNymZ7vqY/0.jpg" alt="مقطع 2">
+            <p>مقطع 2</p>
+        </div>
+        <div class="video-item" onclick="playVideo('https://www.youtube.com/embed/XHOmwETbsHs')">
+            <img src="https://img.youtube.com/vi/XHOmwETbsHs/0.jpg" alt="مقطع 3">
+            <p>مقطع 3</p>
+        </div>
+    </div>
 
-  <script>
-    // JavaScript
-    const menu = document.getElementById("menu");
-    const gameContainer = document.getElementById("game-container");
-    const gameOverScreen = document.getElementById("game-over");
-    const canvas = document.querySelector("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 400;
-    canvas.height = 400;
+    <script>
+        // JavaScript - للتحكم في الفيديوهات
+        const videoPlayer = document.getElementById("videoPlayer");
 
-    let gridSize = 20;
-    let snake = [{ x: 200, y: 200 }];
-    let direction = "RIGHT";
-    let nextDirection = "RIGHT";
-    let food = {};
-    let score = 0;
-    let speed = 100;
-    let running = false;
-
-    const maps = [
-      { background: "#222", snakeColor: "green", foodColor: "red" },
-      { background: "#333", snakeColor: "blue", foodColor: "yellow" },
-      { background: "#444", snakeColor: "purple", foodColor: "orange" },
-    ];
-    let selectedMap = maps[0];
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp" && direction !== "DOWN") nextDirection = "UP";
-      if (e.key === "ArrowDown" && direction !== "UP") nextDirection = "DOWN";
-      if (e.key === "ArrowLeft" && direction !== "RIGHT") nextDirection = "LEFT";
-      if (e.key === "ArrowRight" && direction !== "LEFT") nextDirection = "RIGHT";
-    });
-
-    canvas.addEventListener("touchstart", (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    });
-
-    canvas.addEventListener("touchmove", (e) => {
-      const touchEndX = e.touches[0].clientX;
-      const touchEndY = e.touches[0].clientY;
-      const diffX = touchEndX - touchStartX;
-      const diffY = touchEndY - touchStartY;
-
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX > 0 && direction !== "LEFT") nextDirection = "RIGHT";
-        if (diffX < 0 && direction !== "RIGHT") nextDirection = "LEFT";
-      } else {
-        if (diffY > 0 && direction !== "UP") nextDirection = "DOWN";
-        if (diffY < 0 && direction !== "DOWN") nextDirection = "UP";
-      }
-
-      touchStartX = touchEndX;
-      touchStartY = touchEndY;
-    });
-
-    document.getElementById("start-game").addEventListener("click", startGame);
-    document.getElementById("restart-game").addEventListener("click", restartGame);
-
-    document.getElementById("select-map").addEventListener("click", () => {
-      selectedMap = maps[(maps.indexOf(selectedMap) + 1) % maps.length];
-      alert("تم اختيار خريطة جديدة!");
-    });
-
-    function createFood() {
-      food.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-      food.y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-    }
-
-    function update() {
-      const head = { ...snake[0] };
-
-      direction = nextDirection;
-
-      if (direction === "UP") head.y -= gridSize;
-      if (direction === "DOWN") head.y += gridSize;
-      if (direction === "LEFT") head.x -= gridSize;
-      if (direction === "RIGHT") head.x += gridSize;
-
-      if (head.x < 0) head.x = canvas.width - gridSize;
-      if (head.x >= canvas.width) head.x = 0;
-      if (head.y < 0) head.y = canvas.height - gridSize;
-      if (head.y >= canvas.height) head.y = 0;
-
-      snake.unshift(head);
-
-      if (head.x === food.x && head.y === food.y) {
-        score++;
-        createFood();
-        speed = Math.max(50, speed - 2);
-      } else {
-        snake.pop();
-      }
-
-      if (snake.slice(1).some((segment) => segment.x === head.x && segment.y === head.y)) {
-        endGame();
-      }
-    }
-
-    function draw() {
-      ctx.fillStyle = selectedMap.background;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? selectedMap.snakeColor : "lightgreen";
-        ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
-
-        if (index === 0) {
-          ctx.fillStyle = "white";
-          ctx.beginPath();
-          ctx.arc(segment.x + 5, segment.y + 5, 3, 0, Math.PI * 2);
-          ctx.arc(segment.x + 15, segment.y + 5, 3, 0, Math.PI * 2);
-          ctx.fill();
+        function playVideo(url) {
+            videoPlayer.src = url;
         }
-      });
 
-      ctx.fillStyle = selectedMap.foodColor;
-      ctx.fillRect(food.x, food.y, gridSize, gridSize);
+        function searchVideos() {
+            const searchQuery = document.getElementById("searchQuery").value.toLowerCase();
+            const videoItems = document.querySelectorAll(".video-item");
 
-      ctx.fillStyle = "white";
-      ctx.font = "16px Arial";
-      ctx.fillText("Score: " + score, 10, 20);
-    }
-
-    function gameLoop() {
-      if (running) {
-        update();
-        draw();
-        setTimeout(gameLoop, speed);
-      }
-    }
-
-    function startGame() {
-      menu.style.display = "none";
-      gameContainer.style.display = "block";
-      resetGame();
-      running = true;
-      gameLoop();
-    }
-
-    function restartGame() {
-      gameOverScreen.style.display = "none";
-      gameContainer.style.display = "block";
-      resetGame();
-      running = true;
-      gameLoop();
-    }
-
-    function resetGame() {
-      snake = [{ x: 200, y: 200 }];
-      direction = "RIGHT";
-      nextDirection = "RIGHT";
-      score = 0;
-      speed = 100;
-      createFood();
-    }
-
-    function endGame() {
-      running = false;
-      scoreElement.textContent = score;
-      gameOverScreen.style.display = "flex";
-      gameContainer.style.display = "none";
-    }
-
-    createFood();
-  </script>
+            videoItems.forEach(item => {
+                const title = item.querySelector("p").textContent.toLowerCase();
+                if (title.includes(searchQuery)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+    </script>
 </body>
 </html>
